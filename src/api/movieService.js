@@ -89,3 +89,12 @@ export const getMoviesByGenre = async (genreId, page = 1) => {
     throw error;
   }
 };
+
+
+export const getWatchProviders = async (movieId) => {
+  const res = await fetch(
+    `https://api.themoviedb.org/3/movie/${movieId}/watch/providers?api_key=${import.meta.env.VITE_TMDB_API_KEY}`
+  );
+  const data = await res.json();
+  return data.results?.US?.flatrate || []; 
+};

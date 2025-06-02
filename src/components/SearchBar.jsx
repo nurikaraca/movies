@@ -18,21 +18,8 @@ const SearchBar = () => {
   const navigate = useNavigate();
 
   const showInput = useSelector((state) => state.search.showInput);
-  console.log("showInput:", showInput);
-
   const dispatch = useDispatch();
 
-  //  useEffect(() => {
-  //     const handleResize = () => {
-  //       const isSmallScreen = window.innerWidth < 640;
-  //       dispatch(setInputVisible(isSmallScreen)); // Küçük ekranda göster, büyük ekranda gizle
-  //     };
-
-  //     handleResize(); // ilk render'da kontrol et
-  //     window.addEventListener("resize", handleResize); // ekran boyutu değişince kontrol et
-
-  //     return () => window.removeEventListener("resize", handleResize);
-  //   }, [dispatch]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
@@ -113,7 +100,7 @@ const SearchBar = () => {
                     .replace(/\s+/g, "-")}`}
                   className="block px-4 py-2 hover:bg-gray-100 text-left"
                   onClick={() => {
-                    navigate(`/movie/${movie.id}`);
+                    // navigate(`/movie/${movie.id}`);
                     setResults([]);
                     setSearchTerm("");
                     setShowInput(false);

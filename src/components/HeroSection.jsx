@@ -20,7 +20,6 @@ const HeroSection = () => {
       try {
         const data = await getPopularMovies();
         setMovies(data);
-        console.log(data);
       } catch (error) {
         console.error("Error fetching popular movies:", error);
       }

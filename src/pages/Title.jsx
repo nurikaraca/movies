@@ -1,13 +1,13 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useMovieVideos } from "../hooks/useMovieVideos";
-import {  useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Eye } from "lucide-react";
 
 import { useMovie } from "../hooks/useMovie";
 import { cn } from "../lib/utils";
 import { useMovieCredits } from "../hooks/useMovieCredits";
 import { Button } from "../components/ui/button";
-import { getMovieImages } from "../api/movieService";
+import { getMovieImages, getWatchProviders } from "../api/movieService";
 import MovieImages from "../components/image/MovieImages";
 
 const Title = () => {
@@ -20,11 +20,14 @@ const Title = () => {
 
   const { data: movie = [], isloading, isError } = useMovie(id);
   const { data: videos = [] } = useMovieVideos(id);
+  const [providers, setProviders] = useState([]);
 
   if (isloading) {
-    return <div className="pt-24 max-w-6xl mx-auto px-4">Loading...</div>;
-  }
-  if (isError) return <p>Error occurred</p>;
+  return <div className="pt-24 max-w-6xl mx-auto px-4">Loading...</div>;
+}
+if (isError) {
+  return <p>Error occurred</p>;
+}
 
   const trailer = videos.find(
     (video) => video.type === "Trailer" && video.site === "YouTube"
@@ -36,7 +39,22 @@ const Title = () => {
       setImages(images);
     };
     fetchImages();
+    window.scroll(0,0)
   }, [id]);
+
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const providers = await getWatchProviders(movie.id);
+        setProviders(providers);
+      } catch (error) {
+        console.error("Error fetching genre movies:", error);
+      }
+    };
+    fetchProviders();
+  }, [movie]);
+
+ 
 
   return (
     <div className="container mx-auto min-h-screen px-4 py-8 mt-14 bg-background  ">
@@ -169,6 +187,22 @@ const Title = () => {
             )}
           </div>
 
+          {/* Watch Options */}
+          <div className="flex items-center gap-2">
+            <h2>Watch options</h2>
+            {providers && providers.length > 0 ? (
+              providers.map((provider) => (
+                <span key={provider.provider_id} className="text-blue-500">
+                  {provider.provider_name}
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-500">
+                 No Options
+              </span>
+            )}
+          </div>
+
           <hr className="border-t border-gray-300/30" />
         </div>
         <div class=" h-40 lg:col-span-2">
@@ -214,8 +248,8 @@ const Title = () => {
 
       <div className="mt-6">
         <div className="flex justify-start">
-        <div className="bg-yellow-400 w-1 h-7"></div>
-        <h2 className="ml-4 mb-4">Cast</h2>
+          <div className="bg-yellow-400 w-1 h-7"></div>
+          <h2 className="ml-4 mb-4">Cast</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

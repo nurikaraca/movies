@@ -24,6 +24,7 @@ const GenreSection  = () => {
     fetchGenres();
   }, []);
 
+
   return (
     <section id="genre">
     <div className=" space-y-12 px-4 py-6">

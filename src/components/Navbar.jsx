@@ -28,7 +28,6 @@ const Navbar = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setSearchTerm(e.target.value);
-    console.log("Aranan:", searchTerm);
   };
   return (
     <nav
