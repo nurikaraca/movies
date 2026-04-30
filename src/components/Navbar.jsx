@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { cn } from "../lib/utils";
 import ThemeToggle from "./ThemeToggle";
 import SearchBar from "./SearchBar";
@@ -7,9 +7,6 @@ import { useSelector } from "react-redux";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const location = useLocation();
-  const [searchTerm, setSearchTerm] = useState("");
 
   const showInput = useSelector((state) => state.search.showInput);
 
@@ -21,14 +18,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [location]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearchTerm(e.target.value);
-  };
   return (
     <nav
       className={cn(

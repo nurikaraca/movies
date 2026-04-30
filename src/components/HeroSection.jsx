@@ -1,9 +1,6 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   Navigation,
-  Pagination,
-  Mousewheel,
-  Keyboard,
   Autoplay,
 } from "swiper/modules";
 import "swiper/css";

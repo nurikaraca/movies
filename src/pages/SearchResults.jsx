@@ -1,6 +1,4 @@
 import { useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getMovieCredits, searchMovies } from "../api/movieService";
 import { Link } from "react-router-dom";
 
 import { useSearchMovies } from "../hooks/useSearchMovies";
@@ -8,11 +6,9 @@ import { useSearchMovies } from "../hooks/useSearchMovies";
 const SearchResults = () => {
   const [params] = useSearchParams();
   const query = params.get("query");
-  const [castMap, setCastMap] = useState({});
+  const { data: results = [], isLoading, isError } = useSearchMovies(query);
 
-  const { data: results = [], isloading, isError } = useSearchMovies(query);
-
-  if (isloading) {
+  if (isLoading) {
     return <div className="pt-24 max-w-6xl mx-auto px-4">Loading...</div>;
   }
   if (isError) return <p>Error occurred</p>;
@@ -52,7 +48,7 @@ const SearchResults = () => {
                 </h6>
 
                 <p className="text-xs sm:text-sm text-foreground/80 mt-2">
-                  ⭐ {movie.vote_average?.toFixed(1)}
+                  Rating: {movie.vote_average?.toFixed(1)}
                 </p>
               </div>
             </div>

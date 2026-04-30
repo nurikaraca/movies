@@ -16,7 +16,7 @@ export const getPopularMovies = async() => {
 
 export const searchMovies = async (query) => {
     try {
-        const response = await axiosClient.get(`search/movie?query=${query}&language=en-US&page=1&include_adult=false`);
+        const response = await axiosClient.get(`/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=1&include_adult=false`);
         return response.data.results;
     } catch (error) {
         console.error("Error searching movies:", error);
@@ -92,9 +92,13 @@ export const getMoviesByGenre = async (genreId, page = 1) => {
 
 
 export const getWatchProviders = async (movieId) => {
-  const res = await fetch(
-    `https://api.themoviedb.org/3/movie/${movieId}/watch/providers?api_key=${import.meta.env.VITE_TMDB_API_KEY}`
-  );
-  const data = await res.json();
-  return data.results?.US?.flatrate || []; 
+  if (!movieId) return [];
+
+  try {
+    const response = await axiosClient.get(`/movie/${movieId}/watch/providers`);
+    return response.data.results?.US?.flatrate || [];
+  } catch (error) {
+    console.error("Error fetching watch providers:", error);
+    throw error;
+  }
 };

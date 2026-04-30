@@ -5,12 +5,8 @@ import { Search, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { searchMovies } from "../api/movieService";
 import { cn } from "../lib/utils";
-
-{
-  /* Redux Hooks */
-}
 import { useSelector, useDispatch } from "react-redux";
-import { toggleInput, setInputVisible } from "../features/searchSlice";
+import { setInputVisible } from "../features/searchSlice";
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,13 +33,15 @@ const SearchBar = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (results.length === 1) {
-      navigate(`/movie/${results[0].id}`);
+      navigate(`/title/${results[0].id}/${results[0].title
+        .toLowerCase()
+        .replace(/\s+/g, "-")}`);
     } else if (searchTerm.trim()) {
-      navigate(`/search-results?query=${searchTerm}`);
+      navigate(`/search-results?query=${encodeURIComponent(searchTerm)}`);
     }
     setSearchTerm("");
     setResults([]);
-    setShowInput(false);
+    dispatch(setInputVisible(false));
   };
 
   return (
@@ -103,7 +101,7 @@ const SearchBar = () => {
                     // navigate(`/movie/${movie.id}`);
                     setResults([]);
                     setSearchTerm("");
-                    setShowInput(false);
+                    dispatch(setInputVisible(false));
                   }}
                 >
                   <div className="flex items-center justify-baseline ">
@@ -119,7 +117,7 @@ const SearchBar = () => {
               {results.length >= 5 && (
                 <Button
                   onClick={() => {
-                    navigate(`/search-results?query=${searchTerm}`);
+                    navigate(`/search-results?query=${encodeURIComponent(searchTerm)}`);
                     setTimeout(() => {
                       setSearchTerm("");
                       setResults([]);

@@ -1,65 +1,61 @@
-import { useParams, useSearchParams } from "react-router-dom";
-import { useMovieVideos } from "../hooks/useMovieVideos";
-import { useEffect, useState } from "react";
-import { Plus, Eye } from "lucide-react";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Eye, Plus } from "lucide-react";
 
 import { useMovie } from "../hooks/useMovie";
-import { cn } from "../lib/utils";
 import { useMovieCredits } from "../hooks/useMovieCredits";
+import { useMovieImages } from "../hooks/useMovieImages";
+import { useMovieVideos } from "../hooks/useMovieVideos";
+import { useWatchProviders } from "../hooks/useWatchProviders";
+import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
-import { getMovieImages, getWatchProviders } from "../api/movieService";
 import MovieImages from "../components/image/MovieImages";
 
 const Title = () => {
-  const { id, slug } = useParams();
-  const [images, setImages] = useState([]);
-  const [params] = useSearchParams();
-  const query = params.get("query");
+  const { id } = useParams();
+  const { data: movie, isLoading, isError } = useMovie(id);
   const { data: credits = {}, isLoading: isCreditsLoading } =
     useMovieCredits(id);
-
-  const { data: movie = [], isloading, isError } = useMovie(id);
   const { data: videos = [] } = useMovieVideos(id);
-  const [providers, setProviders] = useState([]);
-
-  if (isloading) {
-  return <div className="pt-24 max-w-6xl mx-auto px-4">Loading...</div>;
-}
-if (isError) {
-  return <p>Error occurred</p>;
-}
+  const { data: imageData } = useMovieImages(id);
+  const { data: providers = [] } = useWatchProviders(movie?.id);
 
   const trailer = videos.find(
     (video) => video.type === "Trailer" && video.site === "YouTube"
   );
+
   useEffect(() => {
-    const fetchImages = async () => {
-      const images = await getMovieImages(id);
-      console.log("movie images", images);
-      setImages(images);
-    };
-    fetchImages();
-    window.scroll(0,0)
+    window.scroll(0, 0);
   }, [id]);
 
-  useEffect(() => {
-    const fetchProviders = async () => {
-      try {
-        const providers = await getWatchProviders(movie.id);
-        setProviders(providers);
-      } catch (error) {
-        console.error("Error fetching genre movies:", error);
-      }
-    };
-    fetchProviders();
-  }, [movie]);
+  if (isLoading) {
+    return <div className="pt-24 max-w-6xl mx-auto px-4">Loading...</div>;
+  }
 
- 
+  if (isError || !movie) {
+    return <p>Error occurred</p>;
+  }
+
+  const director =
+    credits.crew?.find((person) => person.job === "Director")?.name ||
+    "Not found";
+  const writers =
+    credits.crew
+      ?.filter(
+        (person) => person.job === "Writer" || person.job === "Screenplay"
+      )
+      .map((writer) => writer.name)
+      .join(" - ") || "Not found";
+  const stars =
+    credits.cast
+      ?.slice(0, 3)
+      .map((actor) => actor.name)
+      .join(" - ") || "Not found";
 
   return (
-    <div className="container mx-auto min-h-screen px-4 py-8 mt-14 bg-background  ">
+    <div className="container mx-auto min-h-screen px-4 py-8 mt-14 bg-background">
       <div className="flex flex-col items-start gap-4">
-        <h1 className="text-2xl font-semibold  text-left overflow-wrap: break-words">
+        <h1 className="text-2xl font-semibold text-left break-words">
           {movie.title}
         </h1>
         <div className="flex flex-row items-center text-foreground/55">
@@ -74,16 +70,15 @@ if (isError) {
       </div>
 
       <div className="grid grid-cols-6 grid-rows-auto gap-4 sm:mb-5">
-        {/* Trailer Video */}
         <div
           className={cn(
-            "max-[600px]:col-span-6  max-[600px]:col-start-1  max-[600px]:row-start-1  ",
-            " min-[600px]:col-span-4  min-[600px]:col-start-3"
+            "max-[600px]:col-span-6 max-[600px]:col-start-1 max-[600px]:row-start-1",
+            "min-[600px]:col-span-4 min-[600px]:col-start-3"
           )}
         >
           {trailer ? (
             <iframe
-              className="aspect-video w-full h-full "
+              className="aspect-video w-full h-full"
               src={`https://www.youtube.com/embed/${trailer.key}`}
               title={trailer.name}
               frameBorder="0"
@@ -95,34 +90,31 @@ if (isError) {
           )}
         </div>
 
-        {/* Poster  */}
         <div
           className={cn(
-            "max-[600px]:col-span-2 max-[600px]:col-start-1 max-[600px]:row-start-2 ",
+            "max-[600px]:col-span-2 max-[600px]:col-start-1 max-[600px]:row-start-2",
             "min-[600px]:col-span-2 min-[600px]:col-start-1 min-[600px]:row-start-1"
           )}
         >
-          {/* Poster */}
           <img
             src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
             alt={movie.title}
-            className="  object-cover"
+            className="object-cover"
           />
         </div>
 
-        {/* Overview */}
         <div
           className={cn(
             "text-foreground text-sm",
-            "max-[600px]:col-span-4  max-[600px]:col-start-3 max-[600px]:row-start-2",
+            "max-[600px]:col-span-4 max-[600px]:col-start-3 max-[600px]:row-start-2",
             "min-[600px]:col-span-6 min-[600px]:row-start-2"
           )}
         >
           <div className="text-lg font-semibold mb-2 flex flex-row gap-4 overflow-x-auto">
-            {movie.genres?.map((genre, key) => (
+            {movie.genres?.map((genre) => (
               <span
-                key={key}
-                className="border border-yellow-200/50 rounded-full px-3 py-1 text-sm text-foreground "
+                key={genre.id}
+                className="border border-yellow-200/50 rounded-full px-3 py-1 text-sm text-foreground"
               >
                 {genre.name}
               </span>
@@ -134,99 +126,68 @@ if (isError) {
         </div>
       </div>
 
-      <hr className="hidden  min-[600px]:flex mt-4 border-t border-gray-300/30" />
+      <hr className="hidden min-[600px]:flex mt-4 border-t border-gray-300/30" />
 
-      <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 mt-3">
-        <div class=" h-40 lg:col-span-4 text-left backdrop-blur-3xl  shadow-md">
-          {/* Director */}
-          <div className="flex items-center gap-2 ">
-            <h2 className="">Director</h2>
-            {isCreditsLoading ? (
-              <p>Loading...</p>
-            ) : (
-              <p className="text-blue-500">
-                {credits.crew?.find((person) => person.job === "Director")
-                  ?.name || "Not found"}
-              </p>
-            )}
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 mt-3">
+        <div className="h-40 lg:col-span-4 text-left backdrop-blur-3xl shadow-md">
+          <div className="flex items-center gap-2">
+            <h2>Director</h2>
+            <p className="text-blue-500">
+              {isCreditsLoading ? "Loading..." : director}
+            </p>
           </div>
 
           <hr className="border-t border-gray-300/30" />
 
-          {/* Writers */}
           <div className="flex items-center gap-2">
             <h2>Writers</h2>
-            {isCreditsLoading ? (
-              <p>Loading...</p>
-            ) : (
-              <div className="flex flex-wrap gap-2 text-blue-500">
-                {credits.crew
-                  ?.filter(
-                    (person) =>
-                      person.job === "Writer" || person.job === "Screenplay"
-                  )
-                  .map((writer) => writer.name)
-                  .join(" - ")}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2 text-blue-500">
+              {isCreditsLoading ? "Loading..." : writers}
+            </div>
           </div>
           <hr className="border-t border-gray-300/30" />
 
-          {/* Stars */}
           <div className="flex items-center gap-2">
             <h2>Stars</h2>
-            {isCreditsLoading ? (
-              <p>Loading...</p>
-            ) : (
-              <span className="text-blue-500">
-                {credits.cast
-                  ?.slice(0, 3)
-                  .map((actor) => actor.name)
-                  .join(" - ")}
-              </span>
-            )}
+            <span className="text-blue-500">
+              {isCreditsLoading ? "Loading..." : stars}
+            </span>
           </div>
 
-          {/* Watch Options */}
           <div className="flex items-center gap-2">
             <h2>Watch options</h2>
-            {providers && providers.length > 0 ? (
+            {providers.length > 0 ? (
               providers.map((provider) => (
                 <span key={provider.provider_id} className="text-blue-500">
                   {provider.provider_name}
                 </span>
               ))
             ) : (
-              <span className="text-gray-500">
-                 No Options
-              </span>
+              <span className="text-gray-500">No Options</span>
             )}
           </div>
 
           <hr className="border-t border-gray-300/30" />
         </div>
-        <div class=" h-40 lg:col-span-2">
-          <div className="flex flex-col ">
-            <Button variant="default">
-              <Plus className="mr-2 h-6 w-6" />
-
+        <div className="h-40 lg:col-span-2">
+          <div className="flex flex-col">
+            <Button variant="default" asChild>
               <a
                 href={`https://www.imdb.com/title/${movie.imdb_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className=""
               >
+                <Plus className="mr-2 h-6 w-6" />
                 <span>Add to Watchlist</span>
               </a>
             </Button>
-            <Button variant="outline">
-              <Eye className="mr-2 h-6 w-6" />
+            <Button variant="outline" asChild>
               <a
                 href={`https://www.imdb.com/title/${movie.imdb_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className=""
               >
+                <Eye className="mr-2 h-6 w-6" />
                 Mark as watched
               </a>
             </Button>
@@ -234,17 +195,14 @@ if (isError) {
         </div>
       </div>
 
-      {/* Images Section */}
-      <div className="flex  flex-col  ">
+      <div className="flex flex-col">
         <div className="flex justify-start">
           <div className="bg-yellow-400 w-1 h-7"></div>
-          <h2 className="ml-4">Photos {images.backdrops?.length ?? 0} </h2>
+          <h2 className="ml-4">Photos {imageData?.backdrops?.length ?? 0}</h2>
         </div>
 
         <MovieImages movieId={movie.id} />
       </div>
-
-      {/* Cast Section */}
 
       <div className="mt-6">
         <div className="flex justify-start">
@@ -253,12 +211,12 @@ if (isError) {
         </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {credits.cast
-            ?.sort((a, b) => b.popularity - a.popularity)
+          {(credits.cast ? [...credits.cast] : [])
+            .sort((a, b) => b.popularity - a.popularity)
             .slice(0, 18)
-            .map((actor, index) => (
+            .map((actor) => (
               <div
-                key={index}
+                key={actor.id}
                 className="flex flex-col items-center gap-4 p-4 bg-white rounded"
               >
                 <img

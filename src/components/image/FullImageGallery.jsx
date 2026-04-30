@@ -1,10 +1,8 @@
-import React from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation } from 'swiper/modules';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
 
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/mousewheel';
+import "swiper/css";
+import "swiper/css/navigation";
 
 const FullImageGallery = ({ images, startIndex = 0, onClose }) => {
   return (
@@ -12,21 +10,26 @@ const FullImageGallery = ({ images, startIndex = 0, onClose }) => {
       <button
         onClick={onClose}
         className="text-foreground text-xl absolute top-4 left-4 z-50"
+        aria-label="Close image gallery"
       >
-        ✖
+        X
       </button>
 
       <Swiper
-        navigation={true} modules={[Navigation]} className="w-screen h-auto max-h-[calc(100vh-140px)] xl:my-[70px] my-10"
-        
+        initialSlide={startIndex}
+        navigation={true}
+        modules={[Navigation]}
+        className="w-screen h-auto max-h-[calc(100vh-140px)] xl:my-[70px] my-10"
       >
         {images.map((img, index) => (
-          <SwiperSlide key={index} className="text-center text-[18px] bg-[#444] flex justify-center items-center ">
+          <SwiperSlide
+            key={img.file_path}
+            className="text-center text-[18px] bg-[#444] flex justify-center items-center"
+          >
             <img
               src={`https://image.tmdb.org/t/p/original${img.file_path}`}
-              alt={`Full view ${index}`}
-              
-              className='block w-full h-full object-cover '
+              alt={`Full view ${index + 1}`}
+              className="block w-full h-full object-cover"
             />
           </SwiperSlide>
         ))}
